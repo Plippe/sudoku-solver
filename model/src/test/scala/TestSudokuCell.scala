@@ -107,6 +107,20 @@ class TestSudokuCell extends FunSpec {
         assert(SudokuCellKnown(8, 8, 0).square === 8)
       }
 
+      it("should return know if one value is passed") {
+        val cell = SudokuCell(0, 0, Set(1))
+        assert(cell.isInstanceOf[SudokuCellKnown])
+      }
+
+      it("should return unknow if a list of values are passed") {
+        val cell = SudokuCell(0, 0, Set(1, 2, 3))
+        assert(cell.isInstanceOf[SudokuCellUnknown])
+      }
+
+      it("should throw an error if no values are passed") {
+        intercept[IllegalArgumentException] { SudokuCell(0, 0, Set()) }
+      }
+
       it("should have 1 to 9 possible values for unknown cells") {
         val unknow = SudokuCellUnknown(0, 0)
         assert(unknow.values.size === 9)
@@ -119,6 +133,32 @@ class TestSudokuCell extends FunSpec {
         assert(unknow.values.contains(7))
         assert(unknow.values.contains(8))
         assert(unknow.values.contains(9))
+      }
+    }
+
+    describe("sum") {
+      it("should throw an error if the cells aren't in same row and columns") {
+        val a = SudokuCellKnown(0, 0, 0)
+        val b = SudokuCellKnown(0, 1, 0)
+        val c = SudokuCellKnown(1, 0, 0)
+
+        intercept[IllegalArgumentException] { a + b }
+        intercept[IllegalArgumentException] { a + c }
+      }
+
+      it("should return a know cell over an unknown one") {
+        val a = SudokuCellKnown(0, 0, 0)
+        val b = SudokuCellUnknown(0, 0)
+
+        assert(a + b === a)
+        assert(b + a === a)
+      }
+
+      it("should return an unknown cell with the common values") {
+        val a = SudokuCellUnknown(0, 0, Set(1, 2, 3, 4, 5, 6))
+        val b = SudokuCellUnknown(0, 0, Set(4, 5, 6, 7, 8, 9))
+
+        assert((a + b).asInstanceOf[SudokuCellUnknown].values === Set(4, 5, 6))
       }
     }
   }

@@ -20,6 +20,28 @@ sealed trait SudokuCell {
       case _ if column < 9 && row < 9 => 8
     }
   }
+
+  def +(that: SudokuCell): SudokuCell = {
+    (this, that) match {
+      case _ if row != that.row => throw new IllegalArgumentException("Rows must match")
+      case _ if column != that.column => throw new IllegalArgumentException("Columns must match")
+      case (known: SudokuCellKnown, _) => known
+      case (_, known: SudokuCellKnown) => known
+      case (a: SudokuCellUnknown, b: SudokuCellUnknown) =>
+        val values: Set[Int] = a.values.intersect(b.values)
+        SudokuCell(a.row, a.column, values)
+    }
+  }
+}
+
+object SudokuCell {
+  def apply(row: Int, column: Int, values: Set[Int]): SudokuCell = {
+    values.size match {
+      case 0 => throw new IllegalArgumentException("No common possible values")
+      case 1 => new SudokuCellKnown(row, column, values.head)
+      case _ => new SudokuCellUnknown(row, column, values)
+    }
+  }
 }
 
 case class SudokuCellKnown(
